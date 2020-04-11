@@ -13,6 +13,7 @@ jobs:
           key: m2
       - run: lein jar
       - run: mkdir -p /tmp/workspace
+      - run: mv target/sweet-crud.jar /tmp/workspace/sweet-crud.jar
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
