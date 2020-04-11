@@ -9,9 +9,6 @@ jobs:
     executor: my-executor
     steps:
       - checkout
-      - run:
-          name: git hash
-          command: git rev-parse HEAD > resources/public/version.txt
       - restore_cache:
           key: m2
       - run: lein jar
