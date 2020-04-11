@@ -180,8 +180,8 @@
               (compojure.api.sweet/GET "/:id" {:as ~'request}
                 :path-params [~'id :- Long]
                 :middleware ~middleware
-                (if-let [res (~find-one-fn-name ~'id (:db ~'request))]
-                  (ring.util.http-response/ok res)
+                (if-let [~'res (~find-one-fn-name ~'id (:db ~'request))]
+                  (ring.util.http-response/ok ~'res)
                   (ring.util.http-response/not-found)))
               (compojure.api.sweet/POST "/" {:as ~'request}
                 :body [~'data s/Any]
@@ -195,3 +195,34 @@
                 :path-params [~'id :- s/Any]
                 :middleware ~middleware
                 (ring.util.http-response/ok (~delete-fn-name ~'id (:db ~'request)))))))
+
+
+(comment
+
+  (defcrud
+    ;;singular name, generates functions (find-customer), (find-customers), (create-customers), etc.
+    "customer"
+    "customers"  ;; name of the SQL table
+    :id ;; primary key of the table above
+    ;; optional vector of keys that are allowed to be added/updated
+    ;; (ie. extra keys that don't map on the database, will be excluded)
+    [:id :name])
+
+  ;; In conjunction (the above is required) we can define routes for it.
+  (def my-context
+    (with-crud-routes
+      {:singular "customer"
+       ;;optional, defaults to []
+       :middleware []}
+      (GET "/some-other-route" {:as request}
+           :query-params [query :- s/Str]
+           :middleware []
+           (do-something query))
+      ;;; you can add more routes here...
+      )
+
+    )
+
+
+
+  )
