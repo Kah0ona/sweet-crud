@@ -7,6 +7,13 @@ If you use (metosin/compojure-api)[https://github.com/metosin/compojure-api] and
 create CRUD routes with persistence.
 
 ## Usage
+First add the dependency:
+
+[![Clojars Project](https://img.shields.io/clojars/v/sweet-crud.svg)](https://clojars.org/sweet-crud)
+
+Build status:
+[![Kah0ona](https://circleci.com/gh/Kah0ona/sweet-crud.svg?style=svg)](https://circleci.com/gh/Kah0ona/sweet-crud)
+
 
 An example. Say you have a SQL table called `customers`, with two fields: `id`, `name`. You want to provide the 4 operations through REST routes, ie. you want these routes:
 
