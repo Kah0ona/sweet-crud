@@ -1,0 +1,34 @@
+version: 2.1
+
+executors:
+  my-executor:
+    docker:
+      - image: circleci/clojure:lein-2.9.1-node
+jobs:
+  build-app:
+    executor: my-executor
+    steps:
+      - checkout
+      - run: # needed for packaging this file into the built jar for cache-busting
+          name: git hash
+          command: git rev-parse HEAD > resources/public/version.txt
+      - restore_cache:
+          key: m2
+      - run: lein jar
+      - run: mkdir -p /tmp/workspace
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - sweet-crud.jar
+      - store_artifacts:
+          path: '/tmp/workspace/sweet-crud.jar'
+      - save_cache: # saves the project dependencies
+          key: m2
+          paths:
+            - ~/.m2
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
