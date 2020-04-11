@@ -15,7 +15,8 @@ Build status:
 [![Kah0ona](https://circleci.com/gh/Kah0ona/sweet-crud.svg?style=svg)](https://circleci.com/gh/Kah0ona/sweet-crud)
 
 
-An example. Say you have a SQL table called `customers`, with two fields: `id`, `name`. You want to provide the 4 operations through REST routes, ie. you want these routes:
+An example. Say you have a SQL table called `customers`, with two fields: `id`, `name**. You want to provide the 4 operations through REST routes, ie. you want these routes:
+
 
 ```
 GET /customers
@@ -27,7 +28,7 @@ DELETE /customers/:id
 
 You can do this with vanilla `compojure-api`, and, say `clojure.java.jdbc` or `honeysql`, but this is fairly repetetive.
 
-Here's how you do it with this library:
+Here's how you do it with this library (also see note below!):
 
 ```clojure
 (namespace my.namespace
@@ -60,7 +61,14 @@ Here's how you do it with this library:
     ;;other routes
     my-context
     ))
+
 ```
+
+If you've done this, you've basically got 4 REST endpoints that persist to SQL
+
+**NOTE**: In the current version it is required that there is a database connection
+inserted through ring middleware, as the `:db` key in the request.
+That is, in the ring request, there should be a key `:db` present, which holds the connection.
 
 
 ## Extra configuration options
