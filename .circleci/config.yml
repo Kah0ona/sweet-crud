@@ -5,11 +5,11 @@ executors:
     docker:
       - image: circleci/clojure:lein-2.9.1-node
 jobs:
-  build-app:
+  build:
     executor: my-executor
     steps:
       - checkout
-      - run: # needed for packaging this file into the built jar for cache-busting
+      - run:
           name: git hash
           command: git rev-parse HEAD > resources/public/version.txt
       - restore_cache:
