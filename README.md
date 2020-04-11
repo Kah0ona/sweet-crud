@@ -51,10 +51,6 @@ Here's how you do it with this library:
      {:singular "customer"
       ;;optional, defaults to []
       :middleware []}
-     (GET "/some-other-route" {:as request}
-         :query-params [query :- s/Str]
-         :middleware []
-         (do-something query))
       ;;; you can add more routes here...
    ))
 
