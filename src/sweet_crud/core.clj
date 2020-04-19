@@ -1,10 +1,7 @@
 (ns sweet-crud.core
   (:require
-   [clj-time.local :as l]
-   [clj-time.coerce :as jt]
    [clojure.java.jdbc :as j]
    [honeysql.core :as sql]
-   [clojure.tools.logging :as timbre :refer (log debug warn)]
    [honeysql.helpers :refer :all]))
 
 (defn convert-numbers-map
@@ -15,32 +12,6 @@
                  [k (float v)]
                  [k v]))
              r)))
-
-(defn update-by-pk-query
-  "Creates a default update query, and returns it using sql/format, ready to pass on to jdbc.
-  Does not do any checks; just applies the keys in the map. if a value is nil, it will 'unset' the value in the DB"
-  [id-field table record]
-  (if (nil? (get record id-field))
-    (throw (Exception. (str "no ID field found in the record, should be under the key " id-field)))
-    (let [id (get record id-field)
-          set-map (dissoc record id-field)
-          res       (-> (update (keyword table))
-                        (sset set-map)
-                        (where [:= id-field id])
-                        sql/format)]
-      (debug res)
-      res)))
-
-(defn insert-record
-  "Creates an insertion query for a record with keys converted to column names in the table.
-  Does not do any data validation whatsoever, so the record should be valid"
-  [table record]
-  (let [x (clojure.pprint/pprint (doall (vec (keys record))))
-        res (-> (insert-into (keyword table))
-                (values [record])
-                sql/format)]
-    (debug res)
-    res))
 
 (defn update-by-pk-query
   "Creates a default update query, and returns it using sql/format, ready to pass on to jdbc.
@@ -60,6 +31,16 @@
   [table pk conn id]
   (convert-numbers-map
    (j/get-by-id conn table id pk {})))
+
+(defn find-records-by-criteria
+  "criteria should be a honeysql where clause."
+  [table where-clauses conn]
+  (let [base-query      (-> (select :*)
+                            (from (keyword table)))
+        formatted-query (-> (partial where base-query)
+                            (apply where-clauses)
+                            sql/format)]
+    (j/query conn formatted-query)))
 
 (defn find-records
   [table conn]
@@ -116,8 +97,10 @@
          delete-fn-name (symbol (str "delete-" singular "!"))]
      `(do
         (defn ~find-fn-name
-          [~'conn]
-          (find-records ~table ~'conn))
+          ([~'conn]
+           (find-records ~table ~'conn))
+          ([~'conn ~'criteria]
+           (find-records-by-criteria ~table ~'criteria ~'conn)))
 
         (defn ~id-fn-name
           [~'id ~'conn]
