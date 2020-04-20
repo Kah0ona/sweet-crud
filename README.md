@@ -3,7 +3,7 @@
 A Clojure library that provides two complementary macro's for creating routes and SQL database access functions for CRUD operations.
 
 
-If you use (metosin/compojure-api)[https://github.com/metosin/compojure-api] and a SQL database, you can use the macro's in this library to
+If you use [metosin/compojure-api](https://github.com/metosin/compojure-api) and a SQL database, you can use the macro's in this library to
 create CRUD routes with persistence.
 
 ## Usage
