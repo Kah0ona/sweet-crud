@@ -93,7 +93,7 @@
    `(defcrud ~singular ~table ~pk key-seq nil))
   ([singular table pk key-seq plural]
    (let [id-fn-name     (symbol (str "find-" singular "-by-id"))
-         find-fn-name   (symbol (or plural
+         find-fn-name   (symbol (or (str "find-" plural)
                                     (str "find-" singular "s")))
          create-fn-name (symbol (str "create-" singular "!"))
          update-fn-name (symbol (str "update-" singular "!"))
