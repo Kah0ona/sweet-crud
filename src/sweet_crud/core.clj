@@ -66,8 +66,8 @@
 
 (defn create-record!
   [table pk key-seq conn record & [return?]]
-  (let [res (j/insert! conn table (select-keys record
-                                               (or key-seq (keys record))))
+  (let [res (j/insert! conn table
+                       (select-keys record (or key-seq (keys record))))
         id  (:generated_key (first res))]
     (when return?
       (find-record-by-id table pk conn (or (get record pk)
@@ -88,10 +88,13 @@
 
 (defmacro defcrud
   ([singular table pk]
-   `(defcrud ~singular ~table ~pk nil))
+   `(defcrud ~singular ~table ~pk nil nil))
   ([singular table pk key-seq]
+   `(defcrud ~singular ~table ~pk key-seq nil))
+  ([singular table pk key-seq plural]
    (let [id-fn-name     (symbol (str "find-" singular "-by-id"))
-         find-fn-name   (symbol (str "find-" singular "s"))
+         find-fn-name   (symbol (or plural
+                                    (str "find-" singular "s")))
          create-fn-name (symbol (str "create-" singular "!"))
          update-fn-name (symbol (str "update-" singular "!"))
          delete-fn-name (symbol (str "delete-" singular "!"))]
