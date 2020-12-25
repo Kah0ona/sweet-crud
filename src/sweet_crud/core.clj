@@ -90,7 +90,7 @@
   ([singular table pk]
    `(defcrud ~singular ~table ~pk nil nil))
   ([singular table pk key-seq]
-   `(defcrud ~singular ~table ~pk key-seq nil))
+   `(defcrud ~singular ~table ~pk ~key-seq nil))
   ([singular table pk key-seq plural]
    (let [id-fn-name     (symbol (str "find-" singular "-by-id"))
          find-fn-name   (symbol (or (str "find-" plural)
