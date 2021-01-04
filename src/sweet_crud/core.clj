@@ -14,7 +14,6 @@
                    [k v]))
                r))))
 
-
 (defn update-by-pk-query
   "Creates a default update query, and returns it using sql/format, ready to pass on to jdbc.
   Does not do any checks; just applies the keys in the map. if a value is nil, it will 'unset' the value in the DB"
