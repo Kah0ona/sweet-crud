@@ -6,12 +6,14 @@
 
 (defn convert-numbers-map
   [r]
-  (into {}
-        (map (fn [[k v]]
-               (if (instance? java.math.BigDecimal v)
-                 [k (float v)]
-                 [k v]))
-             r)))
+  (when r
+    (into {}
+          (map (fn [[k v]]
+                 (if (instance? java.math.BigDecimal v)
+                   [k (float v)]
+                   [k v]))
+               r))))
+
 
 (defn update-by-pk-query
   "Creates a default update query, and returns it using sql/format, ready to pass on to jdbc.
