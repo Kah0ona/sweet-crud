@@ -1,4 +1,4 @@
-(defproject sweet-crud "0.1.7"
+(defproject sweet-crud "0.1.8"
   :description "Two complementary macros to create compojure.api.sweet CRUD routes, with (configurable) database calls."
   :url "https://github.com/Kah0ona/sweet-crud.git"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"

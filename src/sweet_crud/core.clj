@@ -132,6 +132,8 @@
     middleware       :middleware
     singular         :singular
     plural           :plural
+    serialize-fn     :serialize-fn ;; (fn [record] ,,,)
+    parse-fn         :parse-fn     ;; (fn [record] )
     db-namespace     :database-ns
     :as              opts
     :or              {middleware []}}
@@ -158,27 +160,38 @@
         delete-fn-name   (or delete-fn-name
                              (if db-namespace
                                (symbol db-namespace (str "delete-" singular "!"))
-                               (symbol (str "delete-" singular "!"))))]
+                               (symbol (str "delete-" singular "!"))))
+        serialize-fn     (or serialize-fn identity)
+        parse-fn         (or parse-fn identity)]
     `(compojure.api.sweet/context ~url []
               :tags [~plural]
               ~@other-routes
               (compojure.api.sweet/GET "/" {:as ~'request}
                    :middleware ~middleware
-                   (ring.util.http-response/ok (~find-fn-name (:db ~'request))))
+                   (ring.util.http-response/ok (->> (~find-fn-name (:db ~'request))
+                                                    (map ~parse-fn))))
               (compojure.api.sweet/GET "/:id" {:as ~'request}
                 :path-params [~'id :- Long]
                 :middleware ~middleware
-                (if-let [~'res (~find-one-fn-name ~'id (:db ~'request))]
+                (if-let [~'res (-> ~'id
+                                   (~find-one-fn-name (:db ~'request))
+                                   ~parse-fn)]
                   (ring.util.http-response/ok ~'res)
                   (ring.util.http-response/not-found)))
               (compojure.api.sweet/POST "/" {:as ~'request}
                 :body [~'data s/Any]
                 :middleware  ~middleware
-                (ring.util.http-response/ok (~create-fn-name ~'data (:db ~'request) nil ~'request)))
+                (ring.util.http-response/ok (-> ~'data
+                                                ~serialize-fn
+                                                (~create-fn-name (:db ~'request) nil ~'request)
+                                                ~parse-fn)))
               (compojure.api.sweet/PUT "/" {:as ~'request}
                 :body [~'data s/Any]
                 :middleware ~middleware
-                (ring.util.http-response/ok (~update-fn-name ~'data (:db ~'request) nil ~'request)))
+                (ring.util.http-response/ok (-> ~'data
+                                                ~serialize-fn
+                                                (~update-fn-name (:db ~'request) nil ~'request)
+                                                ~parse-fn)))
               (compojure.api.sweet/DELETE "/:id" {:as ~'request}
                 :path-params [~'id :- s/Any]
                 :middleware ~middleware
@@ -196,12 +209,18 @@
     ;; (ie. extra keys that don't map on the database, will be excluded)
     [:id :name])
 
+  (ns a.b.c)
+  (def out identity)
+  (def in identity)
+
   ;; In conjunction (the above is required) we can define routes for it.
   (def my-context
     (with-crud-routes
-      {:singular "customer"
+      {:singular     "customer"
        ;;optional, defaults to []
-       :middleware []}
+       :parse-fn     sweet-crud.tmp.tmp/in
+       :serialize-fn sweet-crud.tmp.tmp/out
+       :middleware   []}
       (GET "/some-other-route" {:as request}
            :query-params [query :- s/Str]
            :middleware []
