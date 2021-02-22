@@ -171,7 +171,7 @@
                    (ring.util.http-response/ok (->> (~find-fn-name (:db ~'request))
                                                     (map ~parse-fn))))
               (compojure.api.sweet/GET "/:id" {:as ~'request}
-                :path-params [~'id :- Long]
+                :path-params [~'id :- s/Any]
                 :middleware ~middleware
                 (if-let [~'res (-> ~'id
                                    (~find-one-fn-name (:db ~'request))
@@ -229,7 +229,6 @@
       )
 
     )
-
 
 
   )
