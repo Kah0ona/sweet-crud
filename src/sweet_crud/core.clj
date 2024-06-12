@@ -62,7 +62,9 @@
          (or (= "orders" table)
              (= :orders table))
          (:products record)
-         (empty? (:products record)))
+         (or
+          (= "()\n" (:products record))
+          (= "()"   (:products record))))
     (throw (ex-info
             "Not allowed to clean an order"
             {:table table
