@@ -68,7 +68,7 @@
             {:table table
              :pk pk
              :conn conn
-             :record record}))))
+             :record record})))
   (update-record-in-db! table
                         pk
                         conn
