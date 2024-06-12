@@ -58,6 +58,17 @@
   [table pk key-seq conn record & [return?]]
   (assert (not (nil? (get record pk)))
           (str "No primary key found in the record, make sure it contains a key" pk))
+  (when (and
+         (or (= "orders" table)
+             (= :orders table))
+         (:products record)
+         (empty? (:products record)))
+    (throw (ex-info
+            "Not allowed to clean an order"
+            {:table table
+             :pk pk
+             :conn conn
+             :record record}))))
   (update-record-in-db! table
                         pk
                         conn
