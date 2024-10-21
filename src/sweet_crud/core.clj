@@ -35,17 +35,21 @@
 
 (defn find-records-by-criteria
   "criteria should be a honeysql where clause."
-  [table where-clauses conn]
-  (let [base-query      (-> (select :*)
-                            (from (keyword table)))
-        formatted-query (-> (partial where base-query)
-                            (apply where-clauses)
-                            sql/format)]
-    (j/query conn formatted-query)))
+  ([table where-clauses conn]
+   (find-records-by-criteria table where-clauses conn {}))
+  ([table where-clauses conn opts]
+   (let [base-query      (-> (select :*)
+                             (from (keyword table)))
+         formatted-query (-> (partial where base-query)
+                             (apply where-clauses)
+                             sql/format)]
+     (j/query conn formatted-query opts))))
 
 (defn find-records
-  [table conn]
-  (j/query conn [(str "SELECT * FROM " table)]))
+  ([table conn]
+   (find-records table conn {}))
+  ([table conn opts]
+   (j/query conn [(str "SELECT * FROM " table)] opts)))
 
 (defn update-record-in-db!
   "Generic function that updates a record in specified table"
