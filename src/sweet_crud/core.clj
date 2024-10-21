@@ -29,9 +29,11 @@
       res)))
 
 (defn find-record-by-id
-  [table pk conn id]
-  (convert-numbers-map
-   (j/get-by-id conn table id pk {})))
+  ([table pk conn id]
+   (find-record-by-id table pk conn id {}))
+  ([table pk conn id opts]
+   (convert-numbers-map
+    (j/get-by-id conn table id pk opts))))
 
 (defn find-records-by-criteria
   "criteria should be a honeysql where clause."
@@ -59,7 +61,7 @@
 
 (defn update-record!
   "If return is supplied, it will return the value"
-  [table pk key-seq conn record & [return?]]
+  [table pk key-seq conn record & [return? opts]]
   (assert (not (nil? (get record pk)))
           (str "No primary key found in the record, make sure it contains a key" pk))
   (when (and
@@ -80,16 +82,15 @@
                         conn
                         (select-keys record (or key-seq (keys record))))
   (when return?
-    (find-record-by-id table pk conn (get record pk))))
+    (find-record-by-id table pk conn (get record pk) opts)))
 
 (defn create-record!
-  [table pk key-seq conn record & [return?]]
+  [table pk key-seq conn record & [return? opts]]
   (let [res (j/insert! conn table
                        (select-keys record (or key-seq (keys record))))
         id  (:generated_key (first res))]
     (when return?
-      (find-record-by-id table pk conn (or (get record pk)
-                                           id)))))
+      (find-record-by-id table pk conn (or (get record pk) id) opts))))
 
 (defn delete-record!
   [table pk conn record-or-id]
@@ -106,10 +107,12 @@
 
 (defmacro defcrud
   ([singular table pk]
-   `(defcrud ~singular ~table ~pk nil nil))
+   `(defcrud ~singular ~table ~pk nil nil nil))
   ([singular table pk key-seq]
-   `(defcrud ~singular ~table ~pk ~key-seq nil))
+   `(defcrud ~singular ~table ~pk ~key-seq nil nil))
   ([singular table pk key-seq plural]
+   `(defcrud ~singular ~table ~pk ~key-seq ~plural nil))
+  ([singular table pk key-seq plural opts]
    (let [id-fn-name     (symbol (str "find-" singular "-by-id"))
          find-fn-name   (symbol (if plural
                                   (str "find-" plural)
@@ -120,21 +123,21 @@
      `(do
         (defn ~find-fn-name
           ([~'conn]
-           (find-records ~table ~'conn))
+           (find-records ~table ~'conn ~opts))
           ([~'conn ~'criteria]
-           (find-records-by-criteria ~table ~'criteria ~'conn)))
+           (find-records-by-criteria ~table ~'criteria ~'conn ~opts)))
 
         (defn ~id-fn-name
           [~'id ~'conn]
-          (find-record-by-id ~table ~pk ~'conn ~'id))
+          (find-record-by-id ~table ~pk ~'conn ~'id ~opts))
 
         (defn ~create-fn-name
           [~'record ~'conn & [~'return? ~'request]]
-          (create-record! ~table ~pk ~key-seq ~'conn ~'record (if (nil? ~'return?) true ~'return?)))
+          (create-record! ~table ~pk ~key-seq ~'conn ~'record (if (nil? ~'return?) true ~'return?) ~opts))
 
         (defn ~update-fn-name
           [~'record ~'conn & [~'return? ~'request]]
-          (update-record! ~table ~pk ~key-seq ~'conn ~'record (if (nil? ~'return?) true ~'return?)))
+          (update-record! ~table ~pk ~key-seq ~'conn ~'record (if (nil? ~'return?) true ~'return?) ~opts))
 
         (defn ~delete-fn-name
           [~'record ~'conn]
