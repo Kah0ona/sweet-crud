@@ -14,6 +14,8 @@
                    [k v]))
                r))))
 
+(def ^:private unnamespace-key (comp keyword name))
+
 (defn update-by-pk-query
   "Creates a default update query, and returns it using sql/format, ready to pass on to jdbc.
   Does not do any checks; just applies the keys in the map. if a value is nil, it will 'unset' the value in the DB"
@@ -21,10 +23,12 @@
   (if (nil? (get record id-field))
     (throw (Exception. (str "no ID field found in the record, should be under the key " id-field)))
     (let [id      (get record id-field)
-          set-map (dissoc record id-field)
+          set-map (->> (dissoc record id-field)
+                       (map (juxt (comp unnamespace-key key) val))
+                       (into {}))
           res     (-> (update (keyword table))
                       (sset set-map)
-                      (where [:= id-field id])
+                      (where [:= (unnamespace-key id-field) id])
                       sql/format)]
       res)))
 
